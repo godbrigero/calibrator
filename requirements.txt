@@ -1,0 +1,10 @@
+breezyslam
+opencv-python
+rplidar-roboticia
+matplotlib
+numpy
+scipy
+pyapriltags
+filterpy
+pydantic
+pygame
