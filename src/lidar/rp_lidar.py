@@ -7,4 +7,4 @@ class RPLidarA1(Laser):
     """
 
     def __init__(self, detectionMargin=0, offsetMillimeters=0):
-        Laser.__init__(self, 360, 5.5, 360, 12000, detectionMargin, offsetMillimeters)
+        Laser.__init__(self, 360, 10.0, 360, 12000, detectionMargin, offsetMillimeters)
