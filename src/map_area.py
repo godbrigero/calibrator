@@ -8,10 +8,14 @@ from camera.detector import AprilTagDetector
 from lidar.rp_lidar import RPLidarA1
 from lidar.slam import RPLidarSLAM
 from position.position_extrapolator import PositionExtrapolator, Sensor, SensorType
+from serialize.serializable_tag_position import SerializableTagPositions
 from util.math import get_position_on_map, get_position_pixels, to_tag_global_position
 from util.position import Position2D
 from util.visual import render_position
 import time
+import argparse
+import signal
+
 
 CAMERA_MATRIX = np.array(
     [
@@ -38,6 +42,10 @@ SLAM = RMHC_SLAM(
 )
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tag_positions_file", type=str, default="out/tag_positions.json")
+    args = parser.parse_args()
+    
     is_stopped = False
     april_tag_vault = AprilTagsVault(optimize_every_n_tags=10)
     
@@ -65,6 +73,24 @@ def main():
     last_update_time = time.time()
     update_interval = 0.01
     
+    def signal_handler(sig, frame):
+        nonlocal is_stopped, detector, slam
+        print("\nCtrl+C detected, saving and exiting...")
+        is_stopped = True
+        
+        # Save tag positions
+        with open(args.tag_positions_file, "w") as f:
+            f.write(SerializableTagPositions.from_tag_positions(april_tag_vault.get_all_estimated_tags()).model_dump_json(indent=4))
+        
+        # Clean up resources
+        detector.stop()
+        slam.stop()
+        plt.close('all')
+        cv2.destroyAllWindows()
+        exit(0)  # Force exit the program
+
+    signal.signal(signal.SIGINT, signal_handler)
+    
     while not is_stopped:
         current_time = time.time()
         if current_time - last_update_time >= update_interval:
@@ -84,8 +110,7 @@ def main():
             plt.pause(0.001)
             last_update_time = current_time
         
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            is_stopped = True
+        cv2.waitKey(1)  # Keep the window responsive
 
 if __name__ == "__main__":
     main()
