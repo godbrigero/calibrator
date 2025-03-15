@@ -1,9 +1,8 @@
 import numpy as np
 from pydantic import BaseModel
-from util.math import get_transformation_matrix_2d
 
 
-class Position2D(BaseModel):
+class Position2D:
     def __init__(self, x: float, y: float, sin: float, cos: float, vx: float = 0, vy: float = 0):
         self.x = x
         self.y = y
@@ -23,3 +22,10 @@ class Position2D(BaseModel):
     @classmethod
     def from_2d_transformation_matrix(cls, transformation_matrix: np.ndarray):
         return cls(transformation_matrix[0, 2], transformation_matrix[1, 2], transformation_matrix[1, 0], transformation_matrix[1, 1])
+
+def get_transformation_matrix_2d(position: Position2D):
+    return np.array([
+        [position.cos, -position.sin, position.x],
+        [position.sin, position.cos, position.y],
+        [0, 0, 1]
+    ])

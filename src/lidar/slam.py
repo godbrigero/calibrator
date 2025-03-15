@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from BreezySLAM.python.breezyslam.algorithms import RMHC_SLAM
+from breezyslam.algorithms import RMHC_SLAM
 from rplidar import RPLidar
 from scipy.interpolate import interp1d
 
@@ -54,13 +54,27 @@ class RPLidarSLAM(Thread):
     def warmup_lidar(self):
         while self.is_running and not self.is_connected:
             try:
+                print("Attempting to connect to LiDAR...")
+                # Initialize RPLidar inside the thread
+                self.lidar = RPLidar(self.port, baudrate=self.baudrate)
+
+                # Reset sequence
+                self.lidar.stop()
+                self.lidar.stop_motor()
+                time.sleep(1)  # Give it time to stop
+                self.lidar.disconnect()
+                
+                time.sleep(1)
+                self.lidar = RPLidar(self.port, baudrate=self.baudrate)
+                self.lidar.start_motor()
+                time.sleep(1)  # Wait for motor to reach speed
+
+                # Test connection by getting first scan
                 print("Testing LiDAR connection...")
                 next(self.lidar.iter_scans())
                 print("Successfully connected to LiDAR!")
-
                 self.is_connected = True
                 break
-
             except Exception as e:
                 self.lidar = RPLidar(self.port, baudrate=self.baudrate)
                 print(f"Failed to connect to LiDAR: {e}")
@@ -77,7 +91,7 @@ class RPLidarSLAM(Thread):
         x, y, theta = self.slam.getpos()
         theta = reverse_radians(np.radians(theta))
         
-        return Position2D(x, y, np.sin(theta), np.cos(theta))
+        return Position2D(x / 1000, y / 1000, np.sin(theta), np.cos(theta))
 
     def get_position_pixels(self) -> Position2D:
         position = self.get_position_meters()

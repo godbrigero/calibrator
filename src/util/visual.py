@@ -5,6 +5,6 @@ from util.position import Position2D
 
 def render_position(pos: Position2D, color):
     plt.arrow(
-        pos.x, pos.y, pos.sin, pos.cos, head_width=5, head_length=5, fc=color, ec=color, alpha=0.5
+        pos.x, pos.y, pos.cos * 10, pos.sin * 10, head_width=5, head_length=5, fc=color, ec=color, alpha=0.5
     )
     plt.plot(pos.x, pos.y, "b.", markersize=4, color=color)

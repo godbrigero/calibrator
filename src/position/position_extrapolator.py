@@ -1,4 +1,5 @@
 from enum import Enum
+import time
 from filterpy.kalman.kalman_filter import KalmanFilter
 import numpy as np
 
@@ -21,12 +22,14 @@ class Sensor:
         return self.position.to_array_with_velocity()
 
 class PositionExtrapolator:
-    def __init__(self, map_size_pixels: int, map_size_meters: float, initial_dt: float = 0.1):
+    def __init__(self, map_size_pixels: int, map_size_meters: float, initial_dt: float = 0.01):
         self.map_size_pixels = map_size_pixels
         self.map_size_meters = map_size_meters
         
+        self.last_time = time.time()
+        
         self.kf = KalmanFilter(dim_x=6, dim_z=6)
-        self.kf.x = np.array([map_size_meters / 2, map_size_meters / 2, 0, 0, 1, 0])
+        self.kf.x = np.array([map_size_meters / 2, map_size_meters / 2, 0, 0, -1, 0])
         self.kf.F = np.array([
             [1, 0, initial_dt, 0, 0, 0],
             [0, 1, 0, initial_dt, 0, 0],
@@ -35,23 +38,29 @@ class PositionExtrapolator:
             [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ])
-    
-    def update_time_step(self, dt: float):
-        self.kf.F[0, 2] = dt
-        self.kf.F[1, 3] = dt
+        self.kf.H = np.eye(6, dtype=float) # type: ignore
+        self.kf.R = np.eye(6) * 0.01
+        self.kf.Q = np.eye(6) * 0.01
+        self.kf.P = np.eye(6) * 0.1
     
     def predict(self):
+        current_time = time.time()
+        dt = current_time - self.last_time
+        self.last_time = current_time
+        self.kf.F[0, 2] = dt
+        self.kf.F[1, 3] = dt
+        
         self.kf.predict()
     
     def update(self, sensor: Sensor):
-        self.kf.update(sensor.get_state(), sensor.noise_matrix)
+        self.kf.update(sensor.get_state())
     
     def get_position(self):
         return Position2D(
             self.kf.x[0],
             self.kf.x[1],
-            self.kf.x[5],
             self.kf.x[4],
+            self.kf.x[5],
             vx=self.kf.x[2],
             vy=self.kf.x[3]
         )

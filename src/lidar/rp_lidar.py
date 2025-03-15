@@ -1,4 +1,4 @@
-from BreezySLAM.python.breezyslam.sensors import Laser
+from breezyslam.sensors import Laser
 
 
 class RPLidarA1(Laser):
