@@ -15,6 +15,7 @@ from util.visual import render_position
 import time
 import argparse
 import signal
+import os
 
 
 CAMERA_MATRIX = np.array(
@@ -30,7 +31,7 @@ DIST_COEFF = np.array(
 tag_size = 0.17
 map_size_pixels = 800
 map_size_meters = 30
-port = "/dev/tty.usbserial-110"
+port = "/dev/cu.usbserial-110"
 baudrate = 256000
 
 SLAM = RMHC_SLAM(
@@ -49,7 +50,11 @@ def main():
     parser.add_argument(
         "--tag_positions_file", type=str, default="out/tag_positions.json"
     )
+    parser.add_argument("--map_output_file", type=str, default="out/map.npy")
     args = parser.parse_args()
+
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(args.map_output_file), exist_ok=True)
 
     is_stopped = False
     april_tag_vault = AprilTagsVault(optimize_every_n_tags=10)
@@ -110,6 +115,9 @@ def main():
                     Position2D(map_size_meters / 2, map_size_meters / 2, 0, 1),
                 ).model_dump_json(indent=4)
             )
+
+        np.save(args.map_output_file, slam.get_map())
+        print(f"Map saved to {args.map_output_file}")
 
         # Clean up resources
         detector.stop()
