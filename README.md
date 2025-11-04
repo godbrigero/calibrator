@@ -264,19 +264,18 @@ Binary numpy array containing the occupancy grid map (grayscale, 0-255).
 
 Contains o stacle informat on for a notated maps:
 
-``json
+```json
 {
-"image_path": "map.png",
-"square_size_meters": 0.5,
-"grid_size_pixels": 50,
+  "image_path": "map.png",
+  "square_size_meters": 0.5,
+  "grid_size_pixels": 50,
 
-"pixels_per_meter": 100.0,
-"obstacles": [
-{ "x": 10, "y": 5 },
-{ "x": 11, "y": 5 }
-]
+  "pixels_per_meter": 100.0,
+  "obstacles": [
+    { "x": 10, "y": 5 },
+    { "x": 11, "y": 5 }
+  ]
 }
-
 ```
 
 ## Troubleshooting
@@ -288,7 +287,7 @@ If the LIDAR fails to connect:
 1. Check the USB connection and port name
 2. Verify baudrate matches your device (typically 115200 or 256000)
 3. Ensure no other process is using the serial p
-rt
+   rt
 4. Try unplugging and reconnecting the device
 
 The system automatically retries connection if initial attempts fail.
@@ -299,7 +298,7 @@ If camera/AprilTag detection isn't working:
 
 1. Verify camera is connected and accessible
 2. Check c
-mera calibration parameters are correct
+   mera calibration parameters are correct
 3. Ensure adequate lighting for tag detection
 4. Verify AprilTag size matches configuration
 
@@ -309,7 +308,7 @@ If the system runs slowly:
 
 1. Reduce `map_size_pixels` for faster SLAM
 2. Lower camera resolution in detec
-or initialization
+   or initialization
 3. Reduce `nthreads` for AprilTag detector if CPU limited
 4. Increase `update_interval` in the main loop
 
@@ -332,4 +331,7 @@ See LICENSE.md for details.
 - [RPLidar Python Library](https://github.com/Roboticia/RPLidar) - LIDAR driver
 - [PyAprilTags](https://github.com/AprilRobotics/apriltag) - AprilTag detection
 - [FilterPy](https://github.com/rlabbe/filterpy) - Kalman filtering
+
+```
+
 ```
